@@ -8,7 +8,7 @@ from pygame.time import Clock
 
 SCREEN_RESOLUTION = (800, 600)
 
-COLOR_GRID = (100, 100, 100)
+COLOR_GRID = (50, 50, 50)
 COLOR_SNAKE = (200, 200, 250)
 COLOR_FOOD = (250, 150, 150)
 COLOR_BG = (0, 0, 0)
@@ -180,36 +180,37 @@ class Snake:
 def main():
   screen = pygame.display.set_mode(SCREEN_RESOLUTION, pygame.DOUBLEBUF)
   pygame.font.init()
-  default_speed = 10
+  default_speed = 5
   grid = Grid(20, (10, 10), 150)
   snake = Snake((0, grid.dimensions[1] // 2), default_speed)
   clock = Clock()
   state = State.PLAYING
-  font = pygame.font.Font('Courier New Bold.ttf', 14)
+  font_small = pygame.font.Font('Courier New Bold.ttf', 14)
+  font_large = pygame.font.Font('Courier New Bold.ttf', 22)
   score = 0
   width = 200
   food_position = grid.get_random_food_position()
   input_speed = NumberInput(
       rect=Rect(SCREEN_RESOLUTION[0] // 2 - width // 2, 475, width, 20),
-      font=font,
+      font=font_small,
       label="SPEED",
       value=default_speed,
       allowed_values=(1, 40))
   input_width = NumberInput(
       rect=Rect(SCREEN_RESOLUTION[0] // 2 - width // 2, 500, width, 20),
-      font=font,
+      font=font_small,
       label="WIDTH",
       value=grid.dimensions[0],
       allowed_values=(5, 60))
   input_height = NumberInput(
       rect=Rect(SCREEN_RESOLUTION[0] // 2 - width // 2, 525, width, 20),
-      font=font,
+      font=font_small,
       label="HEIGHT",
       value=grid.dimensions[1],
       allowed_values=(5, 30))
   input_cell_size = NumberInput(
       rect=Rect(SCREEN_RESOLUTION[0] // 2 - width // 2, 550, width, 20),
-      font=font,
+      font=font_small,
       label="CELL",
       value=grid.cell_size,
       allowed_values=(10, 40))
@@ -231,13 +232,13 @@ def main():
           snake.steer_in_direction((-1, 0))
         elif event.key == pygame.K_UP:
           snake.steer_in_direction((0, -1))
-        elif event.key == pygame.K_RETURN:
-          if state == State.DEAD:
-            score = 0
-            snake = Snake((0, grid.dimensions[1] // 2), input_speed.get_value())
-            food_position = grid.get_random_food_position()
-            state = State.PLAYING
-            clock.tick()
+        elif state == State.DEAD:
+          score = 0
+          snake = Snake((0, grid.dimensions[1] // 2), input_speed.get_value())
+          food_position = grid.get_random_food_position()
+          state = State.PLAYING
+          clock.tick()
+
       elif event.type == pygame.MOUSEBUTTONDOWN:
         mouse_position = pygame.mouse.get_pos()
         new_speed = input_speed.handle_mouse_click(mouse_position)
@@ -260,7 +261,6 @@ def main():
       new_head_position = snake.update(elapsed_time, grid.dimensions)
       if snake.is_dead:
         state = State.DEAD
-        print("YOU DIED!")
       if new_head_position and new_head_position == food_position:
         snake.on_eat()
         food_position = grid.get_random_food_position()
@@ -278,10 +278,11 @@ def main():
       grid.render_filled_rect(screen, COLOR_FOOD, food_position)
     border_color = COLOR_GRID_BORDER_PLAYING if state == State.PLAYING else COLOR_GRID_BORDER_DEAD
     grid.render_border(screen, border_color)
-    render_text(screen, font, COLOR_TEXT, "PYSNAKE", (SCREEN_RESOLUTION[0] // 2, 20))
-    render_text(screen, font, COLOR_TEXT, "Score: %i" % score, (SCREEN_RESOLUTION[0] // 2, 40))
+    render_text(screen, font_large, COLOR_TEXT, "PYSNAKE", (SCREEN_RESOLUTION[0] // 2, 20))
+    render_text(screen, font_small, COLOR_TEXT, "Score: %i" % score, (SCREEN_RESOLUTION[0] // 2, 60))
     if state == State.DEAD:
-      render_text(screen, font, COLOR_TEXT, "GAME OVER! PRESS ENTER TO RESTART", (SCREEN_RESOLUTION[0] // 2, 100))
+      render_text(screen, font_small, COLOR_TEXT, "GAME OVER! PRESS ANY (non-arrow) KEY TO RESTART",
+                  (SCREEN_RESOLUTION[0] // 2, 100))
     input_speed.render(screen)
     input_width.render(screen)
     input_height.render(screen)
